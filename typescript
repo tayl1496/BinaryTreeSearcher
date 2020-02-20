@@ -1,0 +1,1257 @@
+Script started on Tue 04 Dec 2018 12:29:17 PM CST
+[4makka[24m:[1m~/cs1521/projects/project7/src[0m% pwd
+/home/csugrads/tayl1496/cs1521/projects/project7/src
+[4makka[24m:[1m~/cs1521/projects/project7/src[0m% ls -l
+total 68
+-rw------- 1 tayl1496 student   300 Nov 26 13:50 BinaryNode.cpp
+-rw------- 1 tayl1496 student   992 Nov 26 11:05 BinaryNode.h
+-rw------- 1 tayl1496 student 19480 Nov 29 10:59 BinaryNodeTree.cpp
+-rw------- 1 tayl1496 student  5692 Nov 29 11:04 BinaryNodeTree.h
+-rw------- 1 tayl1496 student  4080 Nov 26 11:11 BinaryTreeInterface.h
+drwx------ 3 tayl1496 student  4096 Dec  4 12:27 build
+-rw------- 1 tayl1496 student   163 Nov 26 13:53 CMakeLists.txt
+-rw------- 1 tayl1496 student  4027 Dec  2 15:29 main.cpp
+-rw------- 1 tayl1496 student   233 Nov 26 11:14 NotFoundException.cpp
+-rw------- 1 tayl1496 student   285 Nov 26 11:16 NotFoundException.h
+-rw------- 1 tayl1496 student   565 Nov 26 11:16 PrecondViolatedExcep.cpp
+-rw------- 1 tayl1496 student   749 Nov 26 11:17 PrecondViolatedExcep.h
+-rw------- 1 tayl1496 student     0 Dec  4 12:29 typescript
+[4makka[24m:[1m~/cs1521/projects/project7/src[0m% cat -n CMakel[KLists.txt
+     1	project(Project7)
+     2	
+     3	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -std=c++14")
+     4	
+     5	add_executable(proj7
+     6	  main.cpp
+     7	  PrecondViolatedExcep.cpp
+     8	  NotFoundException.cpp)
+[4makka[24m:[1m~/cs1521/projects/project7/src[0m% cat -n CMakeLists.txt[K[K[K[K[K[K[K[K[K[K[K[K[K[KBinaryN
+BinaryNode.cpp      BinaryNode.h        BinaryNodeTree.cpp  BinaryNodeTree.h    
+[4makka[24m:[1m~/cs1521/projects/project7/src[0m% cat -n BinaryNode.cpp
+     1	
+     2	
+     3	template <typename ItemType>
+     4	BinaryNodeTree<ItemType>::BinaryNode::BinaryNode(const ItemType& anItem,
+     5							 std::shared_ptr<BinaryNode>
+     6							 leftptr,
+     7							 std::shared_ptr<BinaryNode>
+     8							 rightptr)
+     9	{
+    10	  this->item = anItem;
+    11	  this->leftChildPtr = leftptr;
+    12	  this->rightChildPtr = rightptr;
+    13	}
+[4makka[24m:[1m~/cs1521/projects/project7/src[0m% cat -n BinaryNode.cpp[K[K[K[KTree.h
+     1	/** @file
+     2	 *
+     3	 *  @course CS1521
+     4	 *  @section 1
+     5	 *
+     6	 *  Header file for a pointer-based implementation of the ADT binary
+     7	 *  tree.
+     8	 *
+     9	 *  Adapted from pages 480-482 in Carrano 7e.
+    10	 *
+    11	 *  @author Frank M. Carrano
+    12	 *  @author Timothy Henry
+    13	 *  @author Steve Holtz
+    14	 *
+    15	 *  @date 8 Nov 2017
+    16	 *
+    17	 *  @version 7.0 */
+    18	
+    19	#ifndef BINARY_NODE_TREE_
+    20	#define BINARY_NODE_TREE_
+    21	#include <climits>
+    22	#include <cmath>
+    23	#include <memory>
+    24	
+    25	#include "BinaryTreeInterface.h"
+    26	
+    27	/** @class BinaryNodeTree BinaryNodeTree.h "BinaryNodeTree.h"
+    28	 *
+    29	 *  Specification of a link-based ADT binary tree. */
+    30	template <typename ItemType>
+    31	class BinaryNodeTree : public BinaryTreeInterface<ItemType> {
+    32	 protected:
+    33	  class BinaryNode;
+    34	
+    35	  // Type aliases:
+    36	     using BinaryNodePtr =
+    37	       std::shared_ptr<typename BinaryNodeTree<ItemType>::BinaryNode>;
+    38	
+    39	 private:
+    40	     BinaryNodePtr rootPtr;
+    41	
+    42	 protected:
+    43	     //------------------------------------------------------------
+    44	     // Protected Utility Methods Section:
+    45	     // Recursive helper methods for the public methods.
+    46	     //------------------------------------------------------------
+    47	
+    48	     int getHeightHelper(BinaryNodePtr subTreePtr) const;
+    49	
+    50	     int getNumberOfNodesHelper(BinaryNodePtr subTreePtr) const;
+    51	
+    52	     // Recursively adds a new node to the tree in a left/right fashion to
+    53	     // keep the tree balanced.
+    54	     BinaryNodePtr balancedAdd(BinaryNodePtr subTreePtr,
+    55				       BinaryNodePtr newNodePtr);
+    56	
+    57	     // Removes the target value from the tree by calling moveValuesUpTree
+    58	     // to overwrite value with value from child.
+    59	     BinaryNodePtr removeValue(BinaryNodePtr subTreePtr,
+    60				       const ItemType& target,
+    61				       bool& success);
+    62	
+    63	     // Copies values up the tree to overwrite value in current node until
+    64	     // a leaf is reached; the leaf is then removed, since its value is
+    65	     // stored in the parent.
+    66	     BinaryNodePtr moveValuesUpTree(BinaryNodePtr subTreePtr);
+    67	
+    68	     // Recursively searches for target value in the tree by using a
+    69	     // preorder traversal.
+    70	     BinaryNodePtr findNode(BinaryNodePtr treePtr,
+    71				    const ItemType& target) const;
+    72	
+    73	     // Copies the tree rooted at treePtr and returns a pointer to
+    74	     // the copy.
+    75	     BinaryNodePtr copyTree(const BinaryNodePtr& treePtr) const;
+    76	
+    77	     // Recursive traversal helper methods:
+    78	     void preorder(void visit(ItemType&),
+    79			   BinaryNodePtr treePtr);
+    80	     void inorder(void visit(ItemType&),
+    81			  BinaryNodePtr treePtr);
+    82	     void postorder(void visit(ItemType&),
+    83			    BinaryNodePtr treePtr);
+    84	
+    85	     // Tools for manipulating BinaryNodes:
+    86	
+    87	     bool isLeaf(const BinaryNodePtr nodePtr) const;
+    88	
+    89	     BinaryNodePtr getRootPtr() const;
+    90	     void setRootPtr(BinaryNodePtr newRootPtr);
+    91	
+    92	     //----------------------------------------------------------------
+    93	     // My methods
+    94	     //----------------------------------------------------------------
+    95	     void MirrorHelper(BinaryNodePtr treePtr);
+    96	     void printAllPathsFromRootToLeafHelper(BinaryNodePtr treePtr, ItemType pathArray[], int index);
+    97	     bool isThisaBSTHelper(BinaryNodePtr treePtr, int min, int max);
+    98	     ItemType maxValueHelper(BinaryNodePtr treePtr, ItemType currentMax);
+    99	     bool doesSomePathHaveSum(BinaryNodePtr treePtr, int sum);
+   100	     ItemType minValueHelper(BinaryNodePtr treePtr, ItemType currentMin);
+   101	     void DisplayOrder(void visit(ItemType&, int a),
+   102			       BinaryNodePtr treePtr,
+   103			       int a);
+   104	 public:
+   105	     //------------------------------------------------------------
+   106	     // Constructor and Destructor Section.
+   107	     //------------------------------------------------------------
+   108	     BinaryNodeTree() = default;
+   109	     BinaryNodeTree(const ItemType& rootItem);
+   110	     BinaryNodeTree(const ItemType& rootItem,
+   111			    const std::shared_ptr<BinaryNodeTree<ItemType>> leftTreePtr,
+   112			    const std::shared_ptr<BinaryNodeTree<ItemType>> rightTreePtr);
+   113	     BinaryNodeTree(const BinaryNodeTree<ItemType>& tree);
+   114	
+   115	     virtual ~BinaryNodeTree() = default;
+   116	
+   117	     //------------------------------------------------------------
+   118	     // Public BinaryTreeInterface Methods Section.
+   119	     //------------------------------------------------------------
+   120	     bool isEmpty() const override;
+   121	
+   122	     int getHeight() const override;
+   123	
+   124	     int getNumberOfNodes() const override;
+   125	
+   126	     ItemType getRootData() const override;
+   127	
+   128	     void setRootData(const ItemType& newData) override;
+   129	
+   130	     bool add(const ItemType& newData) override;
+   131	
+   132	     bool remove(const ItemType& data) override;
+   133	
+   134	     void clear() override;
+   135	
+   136	     ItemType getEntry(const ItemType& anEntry) const override;
+   137	
+   138	     bool contains(const ItemType& anEntry) const override;
+   139	
+   140	     //------------------------------------------------------------
+   141	     // Public Traversals Section.
+   142	     //------------------------------------------------------------
+   143	     void preorderTraverse(void visit(ItemType&) ) override;
+   144	     void inorderTraverse(void visit(ItemType&) ) override;
+   145	     void postorderTraverse(void visit(ItemType&) ) override;
+   146	
+   147	     //------------------------------------------------------------
+   148	     // Overloaded Operator Section.
+   149	     //------------------------------------------------------------
+   150	     BinaryNodeTree& operator=(const BinaryNodeTree& rhs);
+   151	
+   152	     //-----------------------------------------------------------
+   153	     // Assigment Methods
+   154	     //-----------------------------------------------------------
+   155	     void DisplayTree(void visit(ItemType&, int) );
+   156	     void Mirror();
+   157	     void printAllPathsFromRootToLeaf();
+   158	     void printArray(ItemType pathArray[], int length);
+   159	     bool isThisaBST();
+   160	     ItemType maxValue();
+   161	     ItemType minValue();
+   162	     bool getSum(int sum);
+   163	};
+   164	
+   165	#include "BinaryNode.h"
+   166	
+   167	#include "BinaryNodeTree.cpp"
+   168	
+   169	#endif
+[4makka[24m:[1m~/cs1521/projects/project7/src[0m% cat -n BinaryNodeTree.h[Kcpp
+     1	/** @file
+     2	 *
+     3	 *  @course CS1521
+     4	 *  @section 1
+     5	 *
+     6	 *  Implementation file for a pointer-based implementation of the ADT binary
+     7	 *  tree.
+     8	 *
+     9	 *  Adapted from pages 482-491 in Carrano 7e.
+    10	 *
+    11	 *  @author Frank M. Carrano
+    12	 *  @author Timothy Henry
+    13	 *  @author Steve Holtz
+    14	 *
+    15	 *  @date 8 Nov 2017
+    16	 *
+    17	 *  @version 7.0 */
+    18	
+    19	#include <algorithm>
+    20	#include <iostream>
+    21	#include <memory>
+    22	#include <new>
+    23	
+    24	#include "PrecondViolatedExcep.h"
+    25	#include "NotFoundException.h"
+    26	
+    27	//////////////////////////////////////////////////////////////
+    28	//      Protected Utility Methods Section
+    29	//////////////////////////////////////////////////////////////
+    30	template <typename ItemType>
+    31	int BinaryNodeTree<ItemType>::getHeightHelper(BinaryNodePtr subTreePtr) const
+    32	{
+    33	  int height(0);
+    34	
+    35	  if (subTreePtr != nullptr) {
+    36	    height = 1 + std::max(getHeightHelper(subTreePtr->leftChildPtr),
+    37				  getHeightHelper(subTreePtr->rightChildPtr) );
+    38	  }
+    39	
+    40	  return height;
+    41	}
+    42	
+    43	template <typename ItemType>
+    44	int BinaryNodeTree<ItemType>::getNumberOfNodesHelper(BinaryNodePtr subTreePtr) const {
+    45	
+    46	  int numNodes(0);
+    47	
+    48	  if (subTreePtr != nullptr) {
+    49	          numNodes = 1 +
+    50		    getNumberOfNodesHelper(subTreePtr->leftChildPtr) +
+    51		    getNumberOfNodesHelper(subTreePtr->rightChildPtr);
+    52	  }
+    53	
+    54	  return numNodes;
+    55	}
+    56	
+    57	template <typename ItemType>
+    58	std::shared_ptr<typename BinaryNodeTree<ItemType>::BinaryNode>
+    59	BinaryNodeTree<ItemType>::balancedAdd(BinaryNodePtr subTreePtr,
+    60					      BinaryNodePtr newNodePtr) {
+    61	
+    62	  auto returnPtr(newNodePtr);
+    63	
+    64	  if (subTreePtr != nullptr) {
+    65	    auto leftPtr(subTreePtr->leftChildPtr);
+    66	    auto rightPtr(subTreePtr->rightChildPtr);
+    67	
+    68	    if (getHeightHelper(leftPtr) > getHeightHelper(rightPtr) ) {
+    69	      subTreePtr->rightChildPtr = balancedAdd(rightPtr, newNodePtr);
+    70	    }
+    71	    else {
+    72	      subTreePtr->leftChildPtr = balancedAdd(leftPtr, newNodePtr);
+    73	    }
+    74	
+    75	    returnPtr = subTreePtr;
+    76	  }
+    77	
+    78	  return returnPtr;
+    79	}
+    80	
+    81	template <typename ItemType>
+    82	std::shared_ptr<typename BinaryNodeTree<ItemType>::BinaryNode>
+    83	BinaryNodeTree<ItemType>::moveValuesUpTree(BinaryNodePtr subTreePtr) {
+    84	
+    85	  BinaryNodePtr returnPtr;
+    86	
+    87	  if (isLeaf(subTreePtr) ) {
+    88	    subTreePtr.reset();
+    89	  }
+    90	  else {
+    91	    auto leftPtr(subTreePtr->leftChildPtr);
+    92	    auto rightPtr(subTreePtr->rightChildPtr);
+    93	
+    94	    if (getHeightHelper(leftPtr) > getHeightHelper(rightPtr) ) {
+    95	      subTreePtr->item =  leftPtr->item;
+    96	      subTreePtr->leftChildPtr = moveValuesUpTree(leftPtr);
+    97	    }
+    98	    else {
+    99	      subTreePtr->item = rightPtr->item;
+   100	      subTreePtr->rightChildPtr = moveValuesUpTree(rightPtr);
+   101	    }
+   102	
+   103	    returnPtr = subTreePtr;
+   104	  }
+   105	
+   106	  return returnPtr;
+   107	}
+   108	
+   109	/** Depth-first search of tree for item.
+   110	 *
+   111	 *  @param subTreePtr The tree to search.
+   112	 *
+   113	 *  @param target The target item to find.
+   114	 *
+   115	 *  @param success Communicate to client whether we found the target.
+   116	 *
+   117	 *  @return A pointer to the node containing the target. */
+   118	template <typename ItemType>
+   119	std::shared_ptr<typename BinaryNodeTree<ItemType>::BinaryNode>
+   120	BinaryNodeTree<ItemType>::removeValue(BinaryNodePtr subTreePtr,
+   121					      const ItemType& target,
+   122					      bool& success) {
+   123	
+   124	  BinaryNodePtr returnPtr;
+   125	
+   126	  if(subTreePtr != nullptr) {
+   127	    if (subTreePtr->item == target) {
+   128	      subTreePtr = moveValuesUpTree(subTreePtr);
+   129	      success = true;
+   130	    }
+   131	    else {
+   132	      subTreePtr->leftChildPtr = removeValue(subTreePtr->leftChildPtr,
+   133						     target,
+   134						     success);
+   135	      if (!success) {
+   136		subTreePtr->rightChildPtr = removeValue(subTreePtr->rightChildPtr,
+   137							target,
+   138							success);
+   139	      }
+   140	    }
+   141	
+   142	    returnPtr = subTreePtr;
+   143	  }
+   144	
+   145	  return returnPtr;
+   146	}
+   147	
+   148	template <typename ItemType>
+   149	std::shared_ptr<typename BinaryNodeTree<ItemType>::BinaryNode>
+   150	BinaryNodeTree<ItemType>::findNode(BinaryNodePtr subTreePtr,
+   151					   const ItemType& target) const {
+   152	
+   153	  BinaryNodePtr returnPtr;
+   154	
+   155	  if (subTreePtr != nullptr) {
+   156	    if (subTreePtr->item == target) {
+   157	      returnPtr = subTreePtr;
+   158	    }
+   159	    else {
+   160	      returnPtr = findNode(subTreePtr->leftChildPtr,
+   161				   target);
+   162	      if (returnPtr == nullptr) {
+   163		returnPtr = findNode(subTreePtr->rightChildPtr,
+   164				     target);
+   165	      }
+   166	    }
+   167	  }
+   168	
+   169	  return returnPtr;
+   170	}
+   171	
+   172	template <typename ItemType>
+   173	std::shared_ptr<typename BinaryNodeTree<ItemType>::BinaryNode>
+   174	BinaryNodeTree<ItemType>::copyTree(const BinaryNodePtr& subTreePtr) const {
+   175	
+   176	  BinaryNodePtr newTreePtr;
+   177	
+   178	  // Copy tree nodes using a preorder traversal
+   179	  if (subTreePtr != nullptr) {
+   180	    newTreePtr = std::make_shared<BinaryNode>(subTreePtr->item,
+   181						      copyTree(subTreePtr->leftChildPtr),
+   182						      copyTree(subTreePtr->rightChildPtr) );
+   183	  }
+   184	
+   185	  return newTreePtr;
+   186	}
+   187	
+   188	//////////////////////////////////////////////////////////////
+   189	//      Protected Tree Traversal Sub-Section
+   190	//////////////////////////////////////////////////////////////
+   191	
+   192	template <typename ItemType>
+   193	void BinaryNodeTree<ItemType>::preorder(void visit(ItemType&),
+   194						BinaryNodePtr subTreePtr) {
+   195	
+   196	  if (subTreePtr != nullptr) {
+   197	    visit(subTreePtr->item);
+   198	
+   199	    preorder(visit, subTreePtr->leftChildPtr);
+   200	    preorder(visit, subTreePtr->rightChildPtr);
+   201	  }
+   202	}
+   203	
+   204	template <typename ItemType>
+   205	void BinaryNodeTree<ItemType>::inorder(void visit(ItemType&),
+   206					       BinaryNodePtr subTreePtr) {
+   207	
+   208	  if (subTreePtr != nullptr) {
+   209	    inorder(visit, subTreePtr->leftChildPtr);
+   210	
+   211	    visit(subTreePtr->item);
+   212	
+   213	    inorder(visit, subTreePtr->rightChildPtr);
+   214	  }
+   215	}
+   216	
+   217	template <typename ItemType>
+   218	void BinaryNodeTree<ItemType>::postorder(void visit(ItemType&),
+   219						 BinaryNodePtr subTreePtr) {
+   220	
+   221	  if (subTreePtr != nullptr) {
+   222	    postorder(visit, subTreePtr->leftChildPtr);
+   223	    postorder(visit, subTreePtr->rightChildPtr);
+   224	
+   225	    visit(subTreePtr->item);
+   226	  }
+   227	}
+   228	
+   229	//////////////////////////////////////////////////////////////
+   230	//      Protected Node Access Sub-Section
+   231	//////////////////////////////////////////////////////////////
+   232	
+   233	template <typename ItemType>
+   234	bool BinaryNodeTree<ItemType>::isLeaf(BinaryNodePtr nodePtr) const {
+   235	
+   236	     return nodePtr->leftChildPtr == nullptr &&
+   237	       nodePtr->rightChildPtr == nullptr;
+   238	}
+   239	
+   240	template <typename ItemType>
+   241	std::shared_ptr<typename BinaryNodeTree<ItemType>::BinaryNode>
+   242	BinaryNodeTree<ItemType>::getRootPtr() const {
+   243	
+   244	  return rootPtr;
+   245	}
+   246	
+   247	template <typename ItemType>
+   248	void BinaryNodeTree<ItemType>::setRootPtr(BinaryNodePtr newRootPtr) {
+   249	
+   250	  rootPtr = newRootPtr;
+   251	}
+   252	
+   253	//////////////////////////////////////////////////////////////
+   254	//      PUBLIC METHODS BEGIN HERE
+   255	//////////////////////////////////////////////////////////////
+   256	
+   257	//////////////////////////////////////////////////////////////
+   258	//      Constructor and Destructor Section
+   259	//////////////////////////////////////////////////////////////
+   260	
+   261	template <typename ItemType>
+   262	BinaryNodeTree<ItemType>::BinaryNodeTree(const ItemType& rootItem)
+   263	  : rootPtr(std::make_shared<BinaryNode>(rootItem) ) {
+   264	}
+   265	
+   266	template <typename ItemType>
+   267	BinaryNodeTree<ItemType>::BinaryNodeTree(const ItemType& rootItem,
+   268						 const std::shared_ptr<BinaryNodeTree<ItemType>> leftTreePtr,
+   269						 const std::shared_ptr<BinaryNodeTree<ItemType>> rightTreePtr)
+   270	  : rootPtr(std::make_shared<BinaryNode>(rootItem,
+   271						 copyTree(leftTreePtr->rootPtr),
+   272						 copyTree(rightTreePtr->rootPtr)) ) {
+   273	}
+   274	
+   275	template <typename ItemType>
+   276	BinaryNodeTree<ItemType>::BinaryNodeTree(const BinaryNodeTree<ItemType>& treePtr) {
+   277	
+   278	  try {
+   279	    rootPtr = copyTree(treePtr.rootPtr);
+   280	  }
+   281	  catch (const std::bad_alloc&) {
+   282	    clear();
+   283	    throw;
+   284	  }
+   285	}
+   286	
+   287	//////////////////////////////////////////////////////////////
+   288	//      Public BinaryTreeInterface Methods Section
+   289	//////////////////////////////////////////////////////////////
+   290	
+   291	template <typename ItemType>
+   292	bool BinaryNodeTree<ItemType>::isEmpty() const {
+   293	
+   294	  return rootPtr == nullptr;
+   295	}
+   296	
+   297	template <typename ItemType>
+   298	int BinaryNodeTree<ItemType>::getHeight() const {
+   299	
+   300	  return getHeightHelper(rootPtr);
+   301	}
+   302	
+   303	template <typename ItemType>
+   304	int BinaryNodeTree<ItemType>::getNumberOfNodes() const {
+   305	
+   306	  return getNumberOfNodesHelper(rootPtr);
+   307	}
+   308	
+   309	template <typename ItemType>
+   310	void BinaryNodeTree<ItemType>::clear() {
+   311	
+   312	  rootPtr.reset();
+   313	}
+   314	
+   315	template <typename ItemType>
+   316	ItemType BinaryNodeTree<ItemType>::getRootData() const {
+   317	
+   318	  if (isEmpty() ) {
+   319	    std::string message("BinaryNodeTree::getRootData: called ");
+   320	    message += "on an empty tree.";
+   321	
+   322	    throw PrecondViolatedExcep(message);
+   323	  }
+   324	
+   325	  return rootPtr->item;
+   326	}
+   327	
+   328	template <typename ItemType>
+   329	void BinaryNodeTree<ItemType>::setRootData(const ItemType& newItem) {
+   330	
+   331	  if (isEmpty() ) {
+   332	    try {
+   333	      rootPtr = std::make_shared<BinaryNode>(newItem);
+   334	    }
+   335	    catch (const std::bad_alloc&) {
+   336	      // What should we do with this? Return something? Throw a
+   337	      // different type of exception? Crash?
+   338	    }
+   339	  }
+   340	  else {
+   341	    rootPtr->item = newItem;
+   342	  }
+   343	}
+   344	
+   345	template <typename ItemType>
+   346	bool BinaryNodeTree<ItemType>::add(const ItemType& newData) {
+   347	
+   348	  bool canAdd(true);
+   349	
+   350	  try {
+   351	    auto newNodePtr(std::make_shared<BinaryNode>(newData) );
+   352	
+   353	    rootPtr = balancedAdd(rootPtr, newNodePtr);
+   354	  }
+   355	  catch (const std::bad_alloc&) {
+   356	    canAdd = false;
+   357	  }
+   358	
+   359	  return canAdd;
+   360	}
+   361	
+   362	template <typename ItemType>
+   363	bool BinaryNodeTree<ItemType>::remove(const ItemType& target) {
+   364	
+   365	  bool isSuccessful(false);
+   366	
+   367	  rootPtr = removeValue(rootPtr, target, isSuccessful);
+   368	
+   369	  return isSuccessful;
+   370	}
+   371	
+   372	template <typename ItemType>
+   373	ItemType BinaryNodeTree<ItemType>::getEntry(const ItemType& anEntry) const {
+   374	
+   375	  auto binaryNodePtr(findNode(rootPtr, anEntry) );
+   376	
+   377	  if (binaryNodePtr == nullptr) {
+   378	    std::string message("BinaryNodeTree::getEntry: Entry ");
+   379	    message += "not found in this tree.";
+   380	
+   381	    throw NotFoundException(message);
+   382	  }
+   383	
+   384	  return binaryNodePtr->item;
+   385	}
+   386	
+   387	template <typename ItemType>
+   388	bool BinaryNodeTree<ItemType>:: contains(const ItemType& anEntry) const {
+   389	
+   390	  return findNode(rootPtr, anEntry) != nullptr;
+   391	}
+   392	
+   393	//////////////////////////////////////////////////////////////
+   394	//      Public Traversals Section
+   395	//////////////////////////////////////////////////////////////
+   396	
+   397	template <typename ItemType>
+   398	void BinaryNodeTree<ItemType>::preorderTraverse(void visit(ItemType&) ) {
+   399	
+   400	  preorder(visit, rootPtr);
+   401	}
+   402	
+   403	template <typename ItemType>
+   404	void BinaryNodeTree<ItemType>::inorderTraverse(void visit(ItemType&) ) {
+   405	
+   406	  inorder(visit, rootPtr);
+   407	}
+   408	
+   409	template <typename ItemType>
+   410	void BinaryNodeTree<ItemType>::postorderTraverse(void visit(ItemType&) ) {
+   411	
+   412	  postorder(visit, rootPtr);
+   413	}
+   414	
+   415	//////////////////////////////////////////////////////////////
+   416	//      Overloaded Operator
+   417	//////////////////////////////////////////////////////////////
+   418	
+   419	template <typename ItemType>
+   420	BinaryNodeTree<ItemType>&
+   421	BinaryNodeTree<ItemType>::operator=(const BinaryNodeTree<ItemType>& rhs) {
+   422	
+   423	  auto oldTreePtr(rootPtr);
+   424	
+   425	  if (this != &rhs) {
+   426	    try {
+   427	      rootPtr = copyTree(rhs.rootPtr);
+   428	      oldTreePtr.reset();
+   429	    }
+   430	    catch (const std::bad_alloc&) {
+   431	      rootPtr.reset();
+   432	      rootPtr = oldTreePtr;
+   433	      throw;
+   434	    }
+   435	  }
+   436	
+   437	  return *this;
+   438	}
+   439	
+   440	///////////////////////////////////////////////////////////////
+   441	//   My methods that solve simple problems with binary trees
+   442	///////////////////////////////////////////////////////////////
+   443	//private:
+   444	//Unitly Method for DisplayTree method.
+   445	template <typename ItemType>
+   446	void BinaryNodeTree<ItemType>::DisplayOrder(void visit(ItemType&, int),
+   447						    BinaryNodePtr subTreePtr, int a) {
+   448	
+   449	  if (subTreePtr != nullptr) {
+   450	    DisplayOrder(visit, subTreePtr->rightChildPtr, a+1);
+   451	    visit(subTreePtr->item, a);
+   452	    DisplayOrder(visit, subTreePtr->leftChildPtr, a+1);
+   453	   
+   454	  }
+   455	}
+   456	
+   457	//public:
+   458	/** This diplay method displays the tree as required in the assignment
+   459	 * @pre: None
+   460	 *
+   461	 * @post: Tree is displayed. */
+   462	template <typename ItemType>
+   463	void BinaryNodeTree<ItemType>::DisplayTree(void visit(ItemType&, int) ) {
+   464	
+   465	  DisplayOrder(visit, rootPtr, 0);
+   466	}
+   467	
+   468	/** The accessor method that calls the recursive method to flip the tree.
+   469	 *
+   470	 * @post Flips the tree if successful. */
+   471	template <typename ItemType>
+   472	void BinaryNodeTree<ItemType>::Mirror()
+   473	{
+   474	  MirrorHelper(rootPtr);
+   475	}
+   476	
+   477	/** The recursive method that flip the nodes in a tree left-to-right.
+   478	 *
+   479	 * @param The tree to be flipped.
+   480	 *
+   481	 * @post Flips the tree. */
+   482	template <typename ItemType>
+   483	void BinaryNodeTree<ItemType>::MirrorHelper(BinaryNodePtr treePtr)
+   484	{
+   485	  if(treePtr == nullptr)
+   486	    {
+   487	      return;
+   488	    }
+   489	  else
+   490	    {
+   491	      MirrorHelper(treePtr->leftChildPtr);
+   492	      MirrorHelper(treePtr->rightChildPtr);
+   493	      std::swap(treePtr->leftChildPtr, treePtr->rightChildPtr);
+   494	    }
+   495	}
+   496	
+   497	/** An accesor method that calls the actual recursive method to check if BST.
+   498	 *
+   499	 * @return True if it is a BST, or false if not. */
+   500	
+   501	template <typename ItemType>
+   502	bool BinaryNodeTree<ItemType>::isThisaBST()
+   503	{
+   504	  return isThisaBSTHelper(rootPtr, INT_MIN, INT_MAX);
+   505	}
+   506	
+   507	/** A recursive method that sees if the tree contains a binary search tree
+   508	 *
+   509	 * @param The tree to be searched, and the min and max values.
+   510	 *
+   511	 * @return True if it is a BST, or false if not. */
+   512	
+   513	template <typename ItemType>
+   514	bool BinaryNodeTree<ItemType>::isThisaBSTHelper(BinaryNodePtr treePtr,
+   515							int min,
+   516							int max)
+   517	{
+   518	  // An empty tree is a BST
+   519	  if(treePtr == nullptr)
+   520	    {
+   521	      return true;
+   522	    }
+   523	
+   524	  //If this is true, not a BST
+   525	  if(treePtr->item < min || treePtr-> item > max)
+   526	    {
+   527	      return false;
+   528	    }
+   529	  //Checks the subtrees recursively
+   530	  return isThisaBSTHelper(treePtr->leftChildPtr, min, treePtr->item)
+   531	    && isThisaBSTHelper(treePtr->rightChildPtr, treePtr->item, max);
+   532	}
+   533	
+   534	/** The accessor method that calls the recursive method to print all the paths
+   535	 * from root to leaf in the tree.
+   536	 *
+   537	 * @post Prints the paths. */
+   538	template <typename ItemType>
+   539	void BinaryNodeTree<ItemType>::printAllPathsFromRootToLeaf()
+   540	{
+   541	  if(rootPtr == nullptr)
+   542	    {
+   543	      std::string message("BinaryNodeTree::printAllPathsFromRootToLeaf: ");
+   544	      message += "not found in this tree.";
+   545	
+   546	      throw PrecondViolatedExcep(message);
+   547	    }
+   548	  int height = getHeight();
+   549	  ItemType pathArray[height];
+   550	  printAllPathsFromRootToLeafHelper(rootPtr, pathArray, 0);
+   551	}
+   552	
+   553	/** The recursive method that prints all the paths from root to leaf in a tree.
+   554	 *
+   555	 * @param treePtr (the tree), pathArray[] (an array that stores the values of 
+   556	 * the nodes in the current path, index (an integer that is the number of nodes
+   557	 * in the current path)
+   558	 *
+   559	 * @post Prints the root to leaf paths */
+   560	template <typename ItemType>
+   561	void BinaryNodeTree<ItemType>::printAllPathsFromRootToLeafHelper(BinaryNodePtr treePtr,
+   562									 ItemType pathArray[], int index)
+   563	{
+   564	  pathArray[index] = treePtr->item;
+   565	  index++;
+   566	  if(treePtr->leftChildPtr == nullptr && treePtr->rightChildPtr == nullptr)
+   567	    {
+   568	      printArray(pathArray,index);
+   569	      return;
+   570	    }
+   571	  if(treePtr->leftChildPtr != nullptr)
+   572	    {
+   573	      printAllPathsFromRootToLeafHelper(treePtr->leftChildPtr, pathArray, index);
+   574	    }
+   575	  if(treePtr->rightChildPtr != nullptr)
+   576	    {
+   577	      printAllPathsFromRootToLeafHelper(treePtr->rightChildPtr, pathArray, index);
+   578	    }
+   579	}
+   580	
+   581	/** Prints each node of a path from root to leaf.
+   582	 *
+   583	 * @param pathArray[] (the array that holds the values of the nodes along the
+   584	 * current path, length (an integer that stores the length of it)
+   585	 *
+   586	 * @post Prints each node of a path from root to leaf. */
+   587	template <typename ItemType>
+   588	void BinaryNodeTree<ItemType>::printArray(ItemType pathArray[], int length)
+   589	{
+   590	  for(int i = 0; i < length; i++)
+   591	    {
+   592	      // std::cout << pathArray[i] << " ";
+   593	      if(pathArray[i] == rootPtr->item)
+   594		{
+   595		  std::cout << "\n";
+   596		}
+   597	      std::cout << pathArray[i] << " ";
+   598	
+   599	    }
+   600	}
+   601	
+   602	/** An accessor method that returns the maximum value of the tree by calling
+   603	 * the actual recursive method
+   604	 *
+   605	 * @return ItemType The maximum value in the tree */
+   606	template <typename ItemType>
+   607	ItemType BinaryNodeTree<ItemType>::maxValue()
+   608	{
+   609	  if(rootPtr == nullptr)
+   610	    {
+   611	      std::string message("BST is empty");
+   612	      throw PrecondViolatedExcep(message);
+   613	    }
+   614	  return maxValueHelper(rootPtr, rootPtr->item);
+   615	}
+   616	
+   617	/** The recursive method that returns the maximum value of the tree.
+   618	 *
+   619	 * @param The tree to be searched, ItemType currentMax (the maximum value)
+   620	 *
+   621	 * @return ItemType The maximum value inside the tree. */
+   622	template <typename ItemType>
+   623	ItemType BinaryNodeTree<ItemType>::maxValueHelper(BinaryNodePtr treePtr,
+   624							  ItemType currentMax)
+   625	{
+   626	  if(treePtr == NULL)
+   627	    {
+   628	      return currentMax;
+   629	    }
+   630	  currentMax = currentMax > treePtr->item ? currentMax : treePtr->item;
+   631	
+   632	  ItemType leftMax = maxValueHelper(treePtr->leftChildPtr, currentMax);
+   633	  ItemType rightMax = maxValueHelper(treePtr->rightChildPtr, currentMax);
+   634	
+   635	  return leftMax > rightMax ? leftMax : rightMax;
+   636	}
+   637	
+   638	/** An accessor method that returns the minimum value inside the tree by
+   639	 * calling the actual recursive method that does the work.
+   640	 *
+   641	 * @return ItemType The minimum value inside the tree. */
+   642	template <typename ItemType>
+   643	ItemType BinaryNodeTree<ItemType>::minValue()
+   644	{
+   645	  if(rootPtr == nullptr)
+   646	    {
+   647	      std::string message("BST is empty");
+   648	      throw PrecondViolatedExcep(message);
+   649	    }
+   650	  return minValueHelper(rootPtr, rootPtr->item);
+   651	}
+   652	
+   653	/** The recursive method that returns the minimum value of the tree.           
+   654	 *                                                                             
+   655	 * @param The tree to be searched, ItemType currentMin 
+   656	 * (the minimum value)          
+   657	 *                                                                             
+   658	 * @return ItemType The minimum value inside the tree. */
+   659	template <typename ItemType>
+   660	ItemType BinaryNodeTree<ItemType>::minValueHelper(BinaryNodePtr treePtr,
+   661							  ItemType currentMin)
+   662	{
+   663	  if(treePtr == NULL)
+   664	    {
+   665	      return currentMin;
+   666	    }
+   667	
+   668	  currentMin = currentMin < treePtr->item ? currentMin : treePtr->item;
+   669	
+   670	  ItemType leftMin = minValueHelper(treePtr->leftChildPtr, currentMin);
+   671	  ItemType rightMin = minValueHelper(treePtr->rightChildPtr, currentMin);
+   672	
+   673	  return leftMin < rightMin ? leftMin : rightMin;
+   674	}
+   675	
+   676	/** Bool method that returns true if there is a path from the root down
+   677	 * to a leaf, such that adding up all the value along the path equals the
+   678	 * given sum (done recursively).
+   679	 *
+   680	 * @param The tree to be searched, and the sum that is to be added (which is
+   681	 * passed by value from another method for safety measures)
+   682	 *
+   683	 * @return True if the sum equals a path from root to a leaf when added,
+   684	 * or false if not. */
+   685	template <typename ItemType>
+   686	bool BinaryNodeTree<ItemType>::doesSomePathHaveSum(BinaryNodePtr treePtr,
+   687							   int sum)
+   688	{
+   689	  if(treePtr == NULL)
+   690	    {
+   691	      return sum == 0;
+   692	    }
+   693	
+   694	  else
+   695	    {
+   696	      bool ans = 0;
+   697	
+   698	      //check both sub trees
+   699	      int subtreeSum = sum - treePtr->item;
+   700	
+   701	      //If the leaf node and sum is 0, return true
+   702	      if(subtreeSum == 0 && treePtr->leftChildPtr == NULL
+   703		 && treePtr->rightChildPtr == NULL)
+   704		{
+   705		  return 1;
+   706		}
+   707	
+   708	      if(treePtr->leftChildPtr)
+   709		{
+   710		  ans = ans || doesSomePathHaveSum(treePtr->leftChildPtr,
+   711						   subtreeSum);
+   712		}
+   713	      if(treePtr->rightChildPtr)
+   714		{
+   715		  ans = ans || doesSomePathHaveSum(treePtr->rightChildPtr,
+   716						   subtreeSum);
+   717		}
+   718	      return ans;
+   719	    }
+   720	}
+   721	
+   722	/** An accessor method that calls the actual recursive method to check if
+   723	 * the sum of root to leaf is added to be the total of the sum passed as an
+   724	 * argument here.
+   725	 *
+   726	 * @param sum An integer value that is supposed to be the sum of the values
+   727	 * from root to leaf.
+   728	 *
+   729	 * @return True if it is the correct sum for a path, or false if not. */
+   730	template <typename ItemType>
+   731	bool BinaryNodeTree<ItemType>::getSum(int sum)
+   732	{
+   733	  if(rootPtr == nullptr)
+   734	    {
+   735	      std::string message("BT is empty");
+   736	      throw PrecondViolatedExcep(message);
+   737	    }
+   738	  return doesSomePathHaveSum(rootPtr, sum);
+   739	}
+[4makka[24m:[1m~/cs1521/projects/project7/src[0m% cat -n BinaryNodeTree.cpp[K[K[K[K[K[K[K[K[K[K[K[K[K[K[K[K[K[KNotF
+NotFoundException.cpp  NotFoundException.h    
+[4makka[24m:[1m~/cs1521/projects/project7/src[0m% cat -n NotFoundException.h
+     1	#ifndef NOT_FOUND_EXCEPTION_
+     2	#define NOT_FOUND_EXCEPTION_
+     3	
+     4	#include <stdexcept>
+     5	#include <string>
+     6	
+     7	class NotFoundException : public std::logic_error
+     8	{
+     9	 public:
+    10	  explicit NotFoundException(const std::string& message = "Not found");
+    11	
+    12	  virtual ~NotFoundException() noexcept;
+    13	};
+    14	
+    15	#endif
+[4makka[24m:[1m~/cs1521/projects/project7/src[0m% cat -n NotFoundException.h[Kcpp
+     1	#include <stdexcept>
+     2	#include <string>
+     3	#include "NotFoundException.h"
+     4	
+     5	NotFoundException::NotFoundException(const std::string& message)
+     6	  : std::logic_error(message.c_str() )
+     7	{
+     8	}
+     9	
+    10	NotFoundException::~NotFoundException()
+    11	noexcept {
+    12	}
+[4makka[24m:[1m~/cs1521/projects/project7/src[0m% cat -n NotFoundException.cpp[K[K[K[K[K[K[K[K[K[K[K[K[K[K[K[K[K[K[K[K[K main.cpp
+     1	#include "BinaryNodeTree.h"
+     2	
+     3	template <typename ItemType>
+     4	void display(ItemType &item, int a)
+     5	{
+     6	  for(int i(0); i<=a; ++i)
+     7	  std::cout << "-";
+     8	
+     9	  std::cout << item << std::endl;
+    10	}
+    11	
+    12	int main()
+    13	{
+    14	  BinaryNodeTree<int> tree1;
+    15	  tree1.add(40);
+    16	  tree1.add(20);
+    17	  tree1.add(50);
+    18	  tree1.add(70);
+    19	  tree1.add(10);
+    20	  tree1.add(30);
+    21	  tree1.add(80);
+    22	  tree1.add(90);
+    23	
+    24	  BinaryNodeTree<int> tree2 = tree1;
+    25	  std::cout << "tree 1 Initially:\n";
+    26	  tree1.DisplayTree(display);
+    27	  std::cout << "root data is: " << tree1.getRootData();
+    28	  std::cout << "\n";
+    29	
+    30	  tree1.Mirror();
+    31	  std::cout << "\ntree1 after Mirror:\n";
+    32	  tree1.DisplayTree(display);
+    33	  std::cout << "root data is: " << tree1.getRootData();
+    34	  std::cout << "\n";
+    35	
+    36	    try
+    37	      {
+    38		std::cout << "\nTree 2 Initially:\n";
+    39		tree2.DisplayTree(display);
+    40		std::cout << "\n";
+    41	
+    42		std::cout << "Printing all paths from root to leaf for tree2:\n";
+    43		tree2.printAllPathsFromRootToLeaf();
+    44	
+    45		std::cout << "\n\nTesting doesSomePathHaveSum(100)" << std::endl;
+    46		std::cout << "Should be true, look at first line of print all paths"
+    47			  << std::endl;
+    48		std::cout << tree2.getSum(180);
+    49	
+    50		std::cout << "\n\nTesting doesSomePathHaveSum(400)" << std::endl;
+    51		std::cout << tree2.getSum(400);
+    52	      }
+    53	
+    54	    catch(const PrecondViolatedExcep &placeHolder)
+    55	      {
+    56		std::cerr << "Exception thrown: " << placeHolder.what() << "\n";
+    57	      }
+    58	
+    59	    BinaryNodeTree<int> tree3;
+    60	    tree3.add(10);
+    61	    tree3.add(60);
+    62	    tree3.add(50);
+    63	    tree3.add(30);
+    64	    tree3.add(70);
+    65	    tree3.add(40);
+    66	    tree3.add(90);
+    67	
+    68	    std::cout << "\n\nTree 3 Initially:\n";
+    69	     tree3.DisplayTree(display);
+    70	    std::cout << std::endl;
+    71	
+    72	    if(tree3.isThisaBST())
+    73	      {
+    74		std::cout << "tree 3 is a binary search tree\n";
+    75	      }
+    76	    else
+    77	      {
+    78		std::cout <<"tree 3 is not a binary search tree\n";
+    79	      }
+    80	
+    81	      try
+    82		{
+    83		  std::cout << "Minimum value in tree 3: " << tree3.minValue()<<std::endl;
+    84		  std::cout << "Maximum value in tree 3: " << tree3.maxValue()<<std::endl;
+    85	
+    86		  BinaryNodeTree<int> tree4;
+    87		  std::cout << "Now finding minimum value in an empty tree 4:\n";
+    88		  std::cout << tree4.minValue() << std::endl;
+    89		}
+    90	      catch(const PrecondViolatedExcep &placeHolder)
+    91		{
+    92		  std::cerr << "exception thrown: " << placeHolder.what() << std::endl;
+    93		}
+    94	
+    95	      BinaryNodeTree<std::string> stringTree1;
+    96	      stringTree1.add("a");
+    97	      stringTree1.add("c");
+    98	      stringTree1.add("k");
+    99	      stringTree1.add("s");
+   100	      stringTree1.add("j");
+   101	      stringTree1.add("z");
+   102	      stringTree1.add("r");
+   103	
+   104	      BinaryNodeTree<std::string> stringTree2 = stringTree1;
+   105	      BinaryNodeTree<std::string> stringTree3 = stringTree1;
+   106	
+   107	      std::cout << "\n\nString tree1 Initially:\n";
+   108	      stringTree1.DisplayTree(display);
+   109	      std::cout << "root data is: " << stringTree1.getRootData();
+   110	      std::cout << "\n";
+   111	
+   112	      stringTree1.Mirror();
+   113	      std::cout << "\nString tree1 after Mirror:\n";
+   114	      stringTree1.DisplayTree(display);
+   115	      std::cout << "root data is: " << stringTree1.getRootData();
+   116	      std::cout << "n";
+   117	
+   118	        try
+   119		  {
+   120		    std::cout << "\nString tree2 Initially:\n";
+   121		    stringTree2.DisplayTree(display);
+   122		    std::cout << "\n";
+   123	
+   124		    std::cout << "Printing all paths from root to leaf for tree2:\n";
+   125		    stringTree2.printAllPathsFromRootToLeaf();
+   126		  }
+   127	
+   128		catch(const PrecondViolatedExcep &placeHolder)
+   129		  {
+   130		    std::cerr << "Exception thrown: " << placeHolder.what() << "\n";
+   131		  }
+   132	
+   133		std::cout << "\n\nString Tree3 inorder:\n";
+   134		stringTree3.DisplayTree(display);
+   135		std::cout << std::endl;
+   136	
+   137		  try
+   138		    {
+   139		      std::cout << "Minimum value in stringTree3: " << stringTree3.minValue()
+   140				<< std::endl;
+   141		      std::cout << "Maximum value in stringTree3: " << stringTree3.maxValue()
+   142				<< std::endl;
+   143		      BinaryNodeTree<std::string> stringTree4;
+   144		      std::cout << "Now finding minimum value in an empty tree4:\n";
+   145		      std::cout << stringTree4.minValue() << std::endl;
+   146		    }
+   147		  catch(const PrecondViolatedExcep &placeHolder)
+   148		    {
+   149		      std::cerr << "exception thrown: " << placeHolder.what() << std::endl;
+   150		    }
+   151	}
+[4makka[24m:[1m~/cs1521/projects/project7/src[0m% cd build/
+[4makka[24m:[1m~/cs1521/projects/project7/src/build[0m% make
+[ 25%] [32mBuilding CXX object CMakeFiles/proj7.dir/main.cpp.o[0m
+[ 50%] [32mBuilding CXX object CMakeFiles/proj7.dir/PrecondViolatedExcep.cpp.o[0m
+[ 75%] [32mBuilding CXX object CMakeFiles/proj7.dir/NotFoundException.cpp.o[0m
+[100%] [32m[1mLinking CXX executable proj7[0m
+[100%] Built target proj7
+[4makka[24m:[1m~/cs1521/projects/project7/src/build[0m% ./proj7 
+tree 1 Initially:
+---90
+--50
+---10
+-40
+---30
+--20
+---70
+----80
+root data is: 40
+
+tree1 after Mirror:
+----80
+---70
+--20
+---30
+-40
+---10
+--50
+---90
+root data is: 40
+
+Tree 2 Initially:
+---90
+--50
+---10
+-40
+---30
+--20
+---70
+----80
+
+Printing all paths from root to leaf for tree2:
+
+40 20 70 80 
+40 20 30 
+40 50 10 
+40 50 90 
+
+Testing doesSomePathHaveSum(100)
+Should be true, look at first line of print all paths
+1
+
+Testing doesSomePathHaveSum(400)
+0
+
+Tree 3 Initially:
+--50
+---70
+-10
+---40
+--60
+---30
+----90
+
+tree 3 is not a binary search tree
+Minimum value in tree 3: 10
+Maximum value in tree 3: 90
+Now finding minimum value in an empty tree 4:
+exception thrown: BST is empty
+
+
+String tree1 Initially:
+--k
+---j
+-a
+---z
+--c
+---s
+----r
+root data is: a
+
+String tree1 after Mirror:
+----r
+---s
+--c
+---z
+-a
+---j
+--k
+root data is: an
+String tree2 Initially:
+--k
+---j
+-a
+---z
+--c
+---s
+----r
+
+Printing all paths from root to leaf for tree2:
+
+a c s r 
+a c z 
+a k j 
+
+String Tree3 inorder:
+--k
+---j
+-a
+---z
+--c
+---s
+----r
+
+Minimum value in stringTree3: a
+Maximum value in stringTree3: z
+Now finding minimum value in an empty tree4:
+exception thrown: BST is empty
+[4makka[24m:[1m~/cs1521/projects/project7/src/build[0m% exit
+exit
+
+Script done on Tue 04 Dec 2018 12:30:36 PM CST

@@ -1,0 +1,3 @@
+/home/csugrads/tayl1496/cs1521/projects/project7/src/build/CMakeFiles/edit_cache.dir
+/home/csugrads/tayl1496/cs1521/projects/project7/src/build/CMakeFiles/rebuild_cache.dir
+/home/csugrads/tayl1496/cs1521/projects/project7/src/build/CMakeFiles/proj7.dir
